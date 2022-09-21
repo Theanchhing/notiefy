@@ -1,0 +1,15 @@
+{
+  "scripts": {
+    "lint": "eslint --ext .js,.jsx .",
+    "lint:fix": "eslint --fix --ext .js,.jsx . "
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/incubation-center/ReactNative-app---Group8.git"
+  },
+  "devDependencies": {
+    "eslint-plugin-react": "^7.30.1",
+    "husky": "^8.0.1",
+    "mega-linter-runner": "^5.14.0"
+  }
+}

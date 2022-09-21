@@ -1,0 +1,45 @@
+{
+  "name": "noteme_back",
+  "version": "1.0.0",
+  "description": "Noteme backend",
+  "scripts": {
+    "start": "node ./src/server.js",
+    "dev": "nodemon ./src/server.js",
+    "lint": "mega-linter-runner ",
+    "migrate": "sequelize-cli db:migrate",
+    "seed": "sequelize-cli db:seed:all"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/incubation-center/ReactNative-app---Group8.git"
+  },
+  "author": "group8_bootcamp",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/incubation-center/ReactNative-app---Group8/issues"
+  },
+  "homepage": "https://github.com/incubation-center/ReactNative-app---Group8#readme",
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "csurf": "^1.11.0",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "express-session": "^1.17.3",
+    "helmet": "^5.0.2",
+    "http-errors": "^2.0.0",
+    "morgan": "^1.10.0",
+    "passport": "^0.6.0",
+    "pg": "^8.7.3",
+    "sequelize": "^6.20.1",
+    "supertokens-node": "^10.0.0",
+    "swagger-jsdoc": "^6.2.1",
+    "swagger-ui-express": "^4.4.0",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.17.0",
+    "eslint-plugin-react": "^7.30.0",
+    "nodemon": "^2.0.16",
+    "sequelize-cli": "^6.4.1"
+  }
+}

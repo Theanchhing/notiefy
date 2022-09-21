@@ -1,0 +1,131 @@
+version: "3"
+services:
+  traefik:
+    image: traefik:latest
+    container_name: "traefik"
+    profiles: ["back"]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.port=8080"
+      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.notiefy.localhost`)"
+    networks:
+      - notiefy
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik:/etc/traefik
+
+  # might use this for file storage idk
+  minio:
+    image: minio/minio
+    container_name: minio
+    restart: unless-stopped
+    profiles: ["not_used"]
+    networks:
+      - notiefy
+    environment:
+      MINIO_ROOT_USER: notiefy
+      MINIO_ROOT_PASSWORD: password
+    volumes:
+      - minio_data:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.minio.entrypoints=http"
+      - "traefik.http.services.minio.loadbalancer.server.port=9001"
+      - "traefik.http.routers.minio.rule=Host(`minio.notiefy.localhost`)"
+    command: minio server /data --address ":9000" --console-address ":9001"
+
+  dev-database:
+    image: postgres:12-alpine
+    container_name: dev-database
+    profiles: ["back"]
+    networks:
+      - notiefy
+    ports:
+      - "5431:5432"
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=db-dev
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+
+  backend:
+    restart: always
+    build: ./backend
+    profiles: ["back"]
+    container_name: backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.entrypoints=http"
+      - "traefik.http.services.backend.loadbalancer.server.port=3000"
+      - "traefik.http.routers.backend.rule=Host(`backend.notiefy.localhost`) && PathPrefix(`/docs`, `/users`, `/auth` )"
+    networks:
+      - notiefy
+    links:
+      - "dev-database:database"
+    depends_on:
+      - dev-database
+    environment:
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=db-dev
+      - DB_HOST=database
+    volumes:
+      - ./backend:/app/
+      - /app/node_modules
+      - ./backend/src/db:/app/src/db
+
+  supertokens:
+    profiles: ["back"]
+    image: registry.supertokens.io/supertokens/supertokens-postgresql
+    container_name: supertokens
+    depends_on:
+      - dev-database
+    environment:
+      DISABLE_TELEMETRY: 1
+      POSTGRESQL_HOST: dev-database
+      POSTGRESQL_DATABASE_NAME: db-dev
+      POSTGRESQL_PORT: 5432
+      POSTGRESQL_PASSWORD: postgres
+      POSTGRESQL_USER: postgres
+    networks:
+      - notiefy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.supertokens.entrypoints=http"
+      - "traefik.http.services.supertokens.loadbalancer.server.port=3567"
+      - "traefik.http.routers.supertokens.rule=Host(`supertokens.notiefy.localhost`)"
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4_container
+    restart: unless-stopped
+    profiles: ["dev"]
+    networks:
+      - notiefy
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@local.dev
+      PGADMIN_DEFAULT_PASSWORD: admin
+    links:
+      - "dev-database:database"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pgadmin.entrypoints=http"
+      - "traefik.http.services.pgadmin.loadbalancer.server.port=5050"
+      - "traefik.http.routers.pgadmin.rule=Host(`pgadmin.notiefy.localhost`)"
+
+volumes:
+  pg-data:
+  pgadmin-data:
+  minio_data:
+
+networks:
+  notiefy:

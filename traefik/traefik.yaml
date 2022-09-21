@@ -1,0 +1,21 @@
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: true
+
+api:
+  insecure: true
+
+log:
+  level: DEBUG
+
+accessLog: {}
+
+
+providers:
+  docker:
+    watch: true
+    exposedbydefault: false
+
+entryPoints:
+  http:
+    address: ":80"
